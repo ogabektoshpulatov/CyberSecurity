@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberUz - Kiberxavfsizlik portali</title>
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif;}
+    body {background: var(--bg); color: var(--text); transition: 0.25s;}
+    :root {
+      --bg: #0b0f12;
+      --text: #e6eef6;
+      --accent: #18d6b6;
+      --card: #0f1720;
+      --muted: #9aa6b3;
+    }
+    body.light {
+      --bg: #f6f8fa;
+      --text: #0f1724;
+      --card: #ffffff;
+      --accent: #007bff;
+      --muted: #667085;
+    }
+    header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:12px 20px; background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);
+      position:sticky; top:0; z-index:100;
+    }
+    .logo {font-weight:700; color:var(--accent); font-size:20px;}
+    nav {display:flex; align-items:center; gap:10px;}
+    nav a {color:var(--text); text-decoration:none; margin:0 6px;}
+    .controls {display:flex; gap:8px; align-items:center;}
+    .btn {background:var(--accent); color:#000; padding:8px 10px; border-radius:8px; border:none; cursor:pointer}
+    .outline {background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--text); padding:8px 10px; border-radius:8px; cursor:pointer}
+    main {max-width:1100px; margin:20px auto; padding:0 16px;}
+    .grid {display:grid; grid-template-columns: 1fr 320px; gap:18px}
+    @media(max-width:980px){ .grid{grid-template-columns:1fr} header{padding:10px} }
+    .card {background:var(--card); padding:16px; border-radius:12px; box-shadow: 0 8px 30px rgba(0,0,0,0.35);}
+    h1,h2 {color:var(--accent); margin-bottom:8px;}
+    .muted {color:var(--muted); font-size:0.95rem}
+    .list {display:flex; flex-direction:column; gap:10px}
+    .item {padding:10px;border-radius:10px; background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent); border:1px solid rgba(255,255,255,0.02)}
+    .item h3{margin-bottom:6px}
+    footer {text-align:center; margin:20px 0; color:var(--muted)}
+    /* modal */
+    .modal-backdrop {position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(3,5,12,0.6); z-index:2000}
+    .modal {width:100%; max-width:520px;}
+    label{display:block;margin-top:8px;margin-bottom:6px}
+    input[type="text"], input[type="email"], input[type="password"], textarea, select {
+      width:100%; padding:10px; border-radius:8px; border:1px solid rgba(0,0,0,0.08); background:transparent; color:var(--text)
+    }
+    .row {display:flex; gap:8px}
+    .row .col {flex:1}
+    .small {font-size:0.9rem;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="logo">CyberUz</div>
+      <div class="small" id="slogan">Kiberxavfsizlik portali • UZ / EN</div>
+    </div>
+
+    <nav>
+      <a href="#about" data-uz="Haqida" data-en="About">Haqida</a>
+      <a href="#books" data-uz="Kitoblar" data-en="Books">Kitoblar</a>
+      <a href="#articles" data-uz="Maqolalar" data-en="Articles">Maqolalar</a>
+      <a href="#resources" data-uz="Resurslar" data-en="Resources">Resurslar</a>
+    </nav>
+
+    <div class="controls">
+      <button class="outline" id="themeToggle">🌗</button>
+      <button class="outline" id="langToggle">UZ</button>
+      <div id="user-area">
+        <button class="btn" id="openLogin">Kirish / Login</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <div>
+        <section id="about" class="card">
+          <h1 data-uz="CyberUz saytiga xush kelibsiz!" data-en="Welcome to CyberUz!">CyberUz saytiga xush kelibsiz!</h1>
+          <p class="muted" id="aboutText" data-uz="Bu portal kiberxavfsizlik, etik xakerlik va onlayn xavfsizlik bo‘yicha kitoblar, maqolalar va resurslarni jamlaydi. Siz ro‘yxatdan o‘tib yangi resurslar qo‘shishingiz mumkin." data-en="This portal gathers books, articles and resources about cybersecurity and ethical hacking. Register to add resources.">
+            Bu portal kiberxavfsizlik, etik xakerlik va onlayn xavfsizlik bo‘yicha kitoblar, maqolalar va resurslarni jamlaydi. Siz ro‘yxatdan o‘tib yangi resurslar qo‘shishingiz mumkin.
+          </p>
+        </section>
+
+        <section id="books" class="card" style="margin-top:14px;">
+          <h2 data-uz="Kitoblar" data-en="Books">Kitoblar</h2>
+          <div class="list" id="booksList"></div>
+        </section>
+
+        <section id="articles" class="card" style="margin-top:14px;">
+          <h2 data-uz="Maqolalar" data-en="Articles">Maqolalar</h2>
+          <div class="list" id="articlesList"></div>
+        </section>
+
+        <section id="resources" class="card" style="margin-top:14px;">
+          <h2 data-uz="Resurslar" data-en="Resources">Resurslar</h2>
+          <div class="list" id="resourcesList"></div>
+        </section>
+      </div>
+
+      <aside>
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <strong id="welcomeText" data-uz="Xush kelibsiz!" data-en="Welcome!">Xush kelibsiz!</strong>
+              <div class="small" id="userInfo">Guest</div>
+            </div>
+            <div>
+              <button class="btn" id="openAdd" title="Qo'shish (faqat login qilinganlar)">+ Qoʻshish</button>
+            </div>
+          </div>
+          <p class="small" style="margin-top:10px" data-uz="Faqat kirgan foydalanuvchilar yangi resurs qoʻshishi mumkin." data-en="Only logged-in users can add new resources.">Faqat kirgan foydalanuvchilar yangi resurs qoʻshishi mumkin.</p>
+        </div>
+
+        <div class="card">
+          <h4 data-uz="Tez havolalar" data-en="Quick links">Tez havolalar</h4>
+          <ul style="margin-top:10px; padding-left:18px; color:var(--muted)">
+            <li><a href="https://tryhackme.com" target="_blank">TryHackMe</a></li>
+            <li><a href="https://www.cybrary.it" target="_blank">Cybrary</a></li>
+            <li><a href="https://owasp.org" target="_blank">OWASP</a></li>
+            <li><a href="https://www.khanacademy.org" target="_blank">Khan Academy</a></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <small>© <span id="year"></span> CyberUz — Kiberxavfsizlik portali • Saqlash: localStorage</small>
+  </footer>
+
+  <!-- LOGIN/REGISTER MODAL -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal card">
+      <h3 id="authTitle">Kirish / Login</h3>
+
+      <div id="authForms">
+        <!-- Login form -->
+        <form id="loginForm">
+          <label data-uz="Email" data-en="Email">Email</label>
+          <input type="email" id="loginEmail" required placeholder="you@example.com" />
+          <label data-uz="Parol" data-en="Password">Parol</label>
+          <input type="password" id="loginPass" required placeholder="••••••••" />
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+            <button type="button" class="outline" id="toRegister">Ro'yxatdan o'tish / Register</button>
+            <button type="submit" class="btn">Kirish / Login</button>
+          </div>
+        </form>
+
+        <!-- Register form -->
+        <form id="registerForm" style="display:none">
+          <label data-uz="Ism" data-en="Name">Ism</label>
+          <input type="text" id="regName" placeholder="Ismingiz" />
+          <label data-uz="Email" data-en="Email">Email</label>
+          <input type="email" id="regEmail" required placeholder="you@example.com" />
+          <label data-uz="Parol (kamida 6 belgi)" data-en="Password (min 6 chars)">Parol (kamida 6 belgi)</label>
+          <input type="password" id="regPass" required placeholder="••••••" />
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+            <button type="button" class="outline" id="toLogin">Kirish / Login</button>
+            <button type="submit" class="btn">Ro'yxatdan o'tish / Register</button>
+          </div>
+        </form>
+      </div>
+
+      <div style="margin-top:10px; text-align:right">
+        <button class="outline" id="closeAuth">Yopish / Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD RESOURCE MODAL -->
+  <div class="modal-backdrop" id="addModal">
+    <div class="modal card">
+      <h3 id="addTitle">Yangi resurs qoʻshish / Add resource</h3>
+      <form id="addForm">
+        <label data-uz="Turi" data-en="Type">Turi</label>
+        <select id="addType">
+          <option value="book">Kitob / Book</option>
+          <option value="article">Maqola / Article</option>
+          <option value="resource">Resurs / Resource</option>
+        </select>
+
+        <label data-uz="Sarlavha (uz||en yoki faqat bir tilda yozish)" data-en="Title (uz||en or single) ">Sarlavha (uz||en yoki faqat bir tilda yozish)</label>
+        <input type="text" id="addTitleInput" required placeholder="Uz||En yoki nom" />
+
+        <label data-uz="Tavsif (uz||en)" data-en="Description (uz||en)">Tavsif (uz||en)</label>
+        <textarea id="addDesc" placeholder="Qisqacha ta'rif"></textarea>
+
+        <label data-uz="Muallif" data-en="Author">Muallif</label>
+        <input type="text" id="addAuthor" />
+
+        <label data-uz="Havola (ixtiyoriy)" data-en="Link (optional)">Havola (ixtiyoriy)</label>
+        <input type="text" id="addLink" placeholder="https://..." />
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+          <button type="button" class="outline" id="closeAdd">Bekor / Cancel</button>
+          <button type="submit" class="btn">Saqlash / Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script>
+/* ===========================
+   App State and Utilities
+   =========================== */
+const YEAR_EL = document.getElementById('year'); YEAR_EL.textContent = new Date().getFullYear();
+
+const KEY_USERS = 'cyberuz_users_v1';
+const KEY_CURRENT = 'cyberuz_current_v1';
+const KEY_DATA = 'cyberuz_data_v1';
+const KEY_COMMENTS = 'cyberuz_comments_v1';
+
+let state = {
+  lang: localStorage.getItem('cyberuz_lang') || 'uz',
+  theme: localStorage.getItem('cyberuz_theme') || 'dark',
+  currentUser: null,
+  data: null
+};
+
+function qs(s){ return document.querySelector(s) }
+function qsa(s){ return document.querySelectorAll(s) }
+
+/* ==============
+   Password hashing (Web Crypto)
+   returns hex string of SHA-256
+   ============== */
+async function hashPassword(pwd){
+  const enc = new TextEncoder();
+  const data = enc.encode(pwd);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const arr = Array.from(new Uint8Array(hash));
+  return arr.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ==============
+   Users (localStorage)
+   user = {name, email, passHash, created}
+   ============== */
+function getUsers(){ try{return JSON.parse(localStorage.getItem(KEY_USERS)||'[]')}catch(e){return []} }
+function saveUsers(users){ localStorage.setItem(KEY_USERS, JSON.stringify(users)) }
+
+function setCurrentUser(email){
+  localStorage.setItem(KEY_CURRENT, email);
+  state.currentUser = email;
+  renderUserArea();
+}
+function clearCurrentUser(){
+  localStorage.removeItem(KEY_CURRENT);
+  state.currentUser = null;
+  renderUserArea();
+}
+function getCurrentUser(){ return localStorage.getItem(KEY_CURRENT) }
+
+/* ==============
+   Initial dataset: expanded books (bilingual)
+   ============== */
+function genId(){ return 'id_'+Math.random().toString(36).slice(2,9) }
+
+const initialData = [
+  { id: genId(), type:'book', title:{uz:"Kiberxavfsizlik asoslari", en:"Foundations of Cybersecurity"}, desc:{uz:"Tizimlar va xavfsizlikga kirish", en:"Intro to systems and security"}, author:"D. T. Ahmedov", link:"", created: Date.now()-1e9 },
+  { id: genId(), type:'book', title:{uz:"Tarmoq xavfsizligi", en:"Network Security Essentials"}, desc:{uz:"Tarmoq himoyasi va protokollar", en:"Protecting networks and protocols"}, author:"William Stallings", link:"", created: Date.now()-2e9 },
+  { id: genId(), type:'book', title:{uz:"Etik xakerlik", en:"The Ethical Hacker's Handbook"}, desc:{uz:"Etik xakerlik tamoyillari", en:"Principles of ethical hacking"}, author:"D. Kennedy", link:"", created: Date.now()-3e9 },
+  { id: genId(), type:'book', title:{uz:"Hacking: The Art of Exploitation", en:"Hacking: The Art of Exploitation"}, desc:{uz:"Amaliy ekspluatatsiya", en:"Practical exploitation techniques"}, author:"Jon Erickson", link:"", created: Date.now()-4e9 },
+  { id: genId(), type:'book', title:{uz:"Web xavfsizligi — OWASP", en:"Web Application Security — OWASP Guide"}, desc:{uz:"Veb-ilovalarning zaifliklari", en:"Common web app vulnerabilities"}, author:"OWASP", link:"https://owasp.org", created: Date.now()-5e9 },
+  { id: genId(), type:'book', title:{uz:"Parollar va autentifikatsiya", en:"Passwords and Authentication"}, desc:{uz:"Parol strategiyalari", en:"Password strategies and best practices"}, author:"A. Smith", link:"", created: Date.now()-6e9 },
+
+  // articles
+  { id: genId(), type:'article', title:{uz:"Parolni kuchaytirish", en:"Strengthening Passwords"}, desc:{uz:"Kuchli parol yaratish usullari", en:"How to create strong passwords"}, author:"CyberUz Team", link:"", created: Date.now()-7e8 },
+  { id: genId(), type:'article', title:{uz:"Phishing hujumlarini aniqlash", en:"Detecting Phishing Attacks"}, desc:{uz:"Email va sayt phishingi", en:"How to spot email/site phishing"}, author:"CyberUz Team", link:"", created: Date.now()-6e8 },
+
+  // resources
+  { id: genId(), type:'resource', title:{uz:"TryHackMe", en:"TryHackMe"}, desc:{uz:"Amaliy laboratoriyalar", en:"Hands-on labs"}, author:"", link:"https://tryhackme.com", created: Date.now()-9e8 },
+  { id: genId(), type:'resource', title:{uz:"Cybrary", en:"Cybrary"}, desc:{uz:"Kurslar va darsliklar", en:"Training courses"}, author:"", link:"https://www.cybrary.it", created: Date.now()-8e8 }
+];
+
+/* ===========
+   Load/save data
+   =========== */
+function loadData(){
+  let d = localStorage.getItem(KEY_DATA);
+  if(!d){ localStorage.setItem(KEY_DATA, JSON.stringify(initialData)); return initialData.slice() }
+  try { return JSON.parse(d) } catch(e) { return initialData.slice() }
+}
+function saveData(arr){ localStorage.setItem(KEY_DATA, JSON.stringify(arr)) }
+
+/* ===========
+   Comments storage (by item id)
+   =========== */
+function getComments(){ try{return JSON.parse(localStorage.getItem(KEY_COMMENTS)||'{}')}catch(e){return {}} }
+function saveComments(c){ localStorage.setItem(KEY_COMMENTS, JSON.stringify(c)) }
+
+/* ===========
+   Init
+   =========== */
+function init(){
+  state.data = loadData();
+  state.currentUser = getCurrentUser();
+  applyTheme(state.theme);
+  applyLang(state.lang);
+  wireUI();
+  renderAll();
+}
+init();
+
+/* ===========================
+   Rendering (books, articles, resources)
+   =========================== */
+function renderAll(){
+  renderBooks();
+  renderArticles();
+  renderResources();
+  renderUserArea();
+}
+
+function renderBooks(){
+  const el = qs('#booksList'); el.innerHTML = '';
+  const books = state.data.filter(i=>i.type==='book').sort((a,b)=> b.created - a.created);
+  for(const b of books){
+    const div = document.createElement('div'); div.className='item';
+    const title = document.createElement('h3'); title.textContent = b.title[state.lang] || b.title['en'];
+    const meta = document.createElement('div'); meta.className='small muted'; meta.textContent = (b.author?('• '+b.author):'') + ' • ' + new Date(b.created).toLocaleDateString();
+    const p = document.createElement('div'); p.className='muted'; p.textContent = b.desc[state.lang] || b.desc['en'] || '';
+    const actions = document.createElement('div'); actions.style.marginTop='8px';
+    const view = document.createElement('button'); view.className='outline'; view.textContent = state.lang==='uz' ? 'Koʻrish' : 'View';
+    view.onclick = ()=> openDetail(b);
+    actions.appendChild(view);
+    div.appendChild(title); div.appendChild(meta); div.appendChild(p); div.appendChild(actions);
+    el.appendChild(div);
+  }
+}
+
+function renderArticles(){
+  const el = qs('#articlesList'); el.innerHTML = '';
+  const arts = state.data.filter(i=>i.type==='article').sort((a,b)=> b.created - a.created);
+  for(const a of arts){
+    const div = document.createElement('div'); div.className='item';
+    const title = document.createElement('h3'); title.textContent = a.title[state.lang] || a.title['en'];
+    const meta = document.createElement('div'); meta.className='small muted'; meta.textContent = (a.author?('• '+a.author):'') + ' • ' + new Date(a.created).toLocaleDateString();
+    const p = document.createElement('div'); p.className='muted'; p.textContent = a.desc[state.lang] || a.desc['en'] || '';
+    const actions = document.createElement('div'); actions.style.marginTop='8px';
+    const view = document.createElement('button'); view.className='outline'; view.textContent = state.lang==='uz'?'Koʻrish':'View';
+    view.onclick = ()=> openDetail(a);
+    actions.appendChild(view);
+    div.appendChild(title); div.appendChild(meta); div.appendChild(p); div.appendChild(actions);
+    el.appendChild(div);
+  }
+}
+
+function renderResources(){
+  const el = qs('#resourcesList'); el.innerHTML = '';
+  const res = state.data.filter(i=>i.type==='resource').sort((a,b)=> b.created - a.created);
+  for(const r of res){
+    const div = document.createElement('div'); div.className='item';
+    const title = document.createElement('h3');
+    const aLink = document.createElement('a');
+    aLink.href = r.link || '#'; aLink.target = '_blank'; aLink.textContent = r.title[state.lang] || r.title['en'];
+    aLink.style.color = 'var(--accent)';
+    title.appendChild(aLink);
+    const meta = document.createElement('div'); meta.className='small muted'; meta.textContent = (r.author?('• '+r.author):'') + ' • ' + new Date(r.created).toLocaleDateString();
+    const p = document.createElement('div'); p.className='muted'; p.textContent = r.desc[state.lang] || r.desc['en'] || '';
+    div.appendChild(title); div.appendChild(meta); div.appendChild(p);
+    el.appendChild(div);
+  }
+}
+
+/* ===========================
+   Detail modal & comments
+   =========================== */
+function openDetail(item){
+  const modal = createModal();
+  const inner = document.createElement('div'); inner.className='card';
+  inner.innerHTML = `<h3>${escapeHtml(item.title[state.lang]||item.title['en']||'')}</h3>
+    <div class="small muted">${item.author?escapeHtml(item.author)+' • ':''}${new Date(item.created).toLocaleDateString()}</div>
+    <p style="margin-top:10px">${escapeHtml(item.desc[state.lang]||item.desc['en']||'')}</p>
+    ${item.link?`<p><a href="${escapeHtml(item.link)}" target="_blank">${escapeHtml(item.link)}</a></p>`:''}
+    <hr style="margin:12px 0; opacity:0.08">
+    <h4>${state.lang==='uz'?'Kommentlar':'Comments'}</h4>
+    <div id="cList" style="max-height:200px;overflow:auto;margin-bottom:8px"></div>
+    <form id="cForm">
+      <label>${state.lang==='uz'?'Ism':'Name'}</label>
+      <input id="cName" type="text" placeholder="${state.lang==='uz'?'Ismingiz':'Your name'}" required />
+      <label style="margin-top:6px">${state.lang==='uz'?'Xabar':'Message'}</label>
+      <textarea id="cText" required></textarea>
+      <div style="display:flex;gap:8px; justify-content:flex-end; margin-top:8px">
+        <button type="button" id="cClose" class="outline">${state.lang==='uz'?'Yopish':'Close'}</button>
+        <button type="submit" class="btn">${state.lang==='uz'?'Yuborish':'Send'}</button>
+      </div>
+    </form>`;
+  modal.appendChild(inner); document.body.appendChild(modal);
+  modal.style.display = 'flex';
+
+  const cList = modal.querySelector('#cList');
+  function refreshComments(){
+    const all = getComments();
+    const arr = all[item.id] || [];
+    cList.innerHTML = '';
+    if(arr.length===0) cList.innerHTML = `<div class="muted">${state.lang==='uz'?'Hozircha kommentlar yo‘q.':'No comments yet.'}</div>`;
+    else arr.slice().reverse().forEach(c=>{
+      const d = document.createElement('div'); d.className='item'; d.innerHTML = `<strong>${escapeHtml(c.name)}</strong> <div class="small muted">${new Date(c.at).toLocaleString()}</div><div style="margin-top:6px">${escapeHtml(c.text)}</div>`;
+      cList.appendChild(d);
+    });
+  }
+  refreshComments();
+
+  modal.querySelector('#cForm').onsubmit = (e)=>{
+    e.preventDefault();
+    const name = modal.querySelector('#cName').value.trim();
+    const text = modal.querySelector('#cText').value.trim();
+    if(!name||!text) return alert(state.lang==='uz'?'Iltimos barcha maydonlarni to‘ldiring':'Please fill all fields');
+    const all = getComments();
+    all[item.id] = all[item.id] || [];
+    all[item.id].push({name, text, at: Date.now()});
+    saveComments(all);
+    modal.querySelector('#cName').value = '';
+    modal.querySelector('#cText').value = '';
+    refreshComments();
+  };
+
+  modal.querySelector('#cClose').onclick = ()=> { modal.remove(); };
+  modal.onclick = (ev)=> { if(ev.target === modal) modal.remove(); };
+}
+
+/* ===========================
+   Modal helper
+   =========================== */
+function createModal(){
+  const m = document.createElement('div'); m.className='modal-backdrop'; m.style.display='flex';
+  m.style.alignItems='center'; m.style.justifyContent='center';
+  return m;
+}
+
+/* ===========================
+   Auth (register/login)
+   =========================== */
+qs('#openLogin').onclick = ()=> openAuth('login');
+qs('#closeAuth').onclick = ()=> closeAuth();
+qs('#toRegister').onclick = ()=> showRegister();
+qs('#toLogin').onclick = ()=> showLogin();
+
+function openAuth(mode='login'){
+  const modal = qs('#authModal');
+  modal.style.display = 'flex';
+  showLogin(); // default
+  if(mode==='register') showRegister();
+}
+function closeAuth(){ qs('#authModal').style.display='none' }
+
+function showLogin(){ qs('#loginForm').style.display='block'; qs('#registerForm').style.display='none'; qs('#authTitle').textContent = state.lang==='uz'?'Kirish / Login':'Login'; }
+function showRegister(){ qs('#loginForm').style.display='none'; qs('#registerForm').style.display='block'; qs('#authTitle').textContent = state.lang==='uz'?'Ro\'yxatdan o\'tish / Register':'Register'; }
+
+qs('#registerForm').onsubmit = async (e)=>{
+  e.preventDefault();
+  const name = qs('#regName').value.trim() || 'User';
+  const email = qs('#regEmail').value.trim().toLowerCase();
+  const pass = qs('#regPass').value;
+  if(!email || !pass){ alert(state.lang==='uz'?'Email va parol kerak':'Email and password required'); return; }
+  if(pass.length < 6){ alert(state.lang==='uz'?'Parol kamida 6 belgidan bo\'lishi kerak':'Password must be at least 6 chars'); return; }
+  const users = getUsers();
+  if(users.find(u=>u.email === email)){ alert(state.lang==='uz'?'Bunday email allaqachon mavjud':'Email already registered'); return; }
+  const hash = await hashPassword(pass);
+  users.push({name, email, passHash: hash, created: Date.now()});
+  saveUsers(users);
+  setCurrentUser(email);
+  closeAuth();
+  qs('#regName').value=''; qs('#regEmail').value=''; qs('#regPass').value='';
+  alert(state.lang==='uz'?'Ro\'yxatdan o\'tish muvaffaqiyatli':'Registered successfully');
+};
+
+qs('#loginForm').onsubmit = async (e)=>{
+  e.preventDefault();
+  const email = qs('#loginEmail').value.trim().toLowerCase();
+  const pass = qs('#loginPass').value;
+  if(!email || !pass) { alert(state.lang==='uz'?'Maydonlarni to\'ldiring':'Fill fields'); return; }
+  const users = getUsers();
+  const user = users.find(u=>u.email === email);
+  if(!user){ alert(state.lang==='uz'?'Foydalanuvchi topilmadi':'User not found'); return; }
+  const hash = await hashPassword(pass);
+  if(hash !== user.passHash){ alert(state.lang==='uz'?'Parol noto\'g\'ri':'Wrong password'); return; }
+  setCurrentUser(email);
+  closeAuth();
+  qs('#loginEmail').value=''; qs('#loginPass').value='';
+  alert(state.lang==='uz'?'Kirish muvaffaqiyatli':'Logged in');
+};
+
+function logout(){
+  clearCurrentUser();
+  alert(state.lang==='uz'?'Chiqildi':'Logged out');
+}
+
+/* ===========================
+   User area render
+   =========================== */
+function renderUserArea(){
+  const ua = qs('#user-area');
+  ua.innerHTML = '';
+  const email = state.currentUser;
+  if(email){
+    const users = getUsers();
+    const user = users.find(u=>u.email === email) || {name:email,email};
+    const wrap = document.createElement('div'); wrap.style.display='flex'; wrap.style.alignItems='center'; wrap.style.gap='8px';
+    const nameDiv = document.createElement('div'); nameDiv.innerHTML = `<div style="font-weight:700">${escapeHtml(user.name)}</div><div class="small muted">${escapeHtml(user.email)}</div>`;
+    const outBtn = document.createElement('button'); outBtn.className='outline'; outBtn.textContent = state.lang==='uz'?'Chiqish':'Logout';
+    outBtn.onclick = ()=> logout();
+    wrap.appendChild(nameDiv); wrap.appendChild(outBtn);
+    ua.appendChild(wrap);
+
+    // also show in sidebar
+    qs('#welcomeText').textContent = state.lang==='uz'?'Xush kelibsiz!' : 'Welcome!';
+    qs('#userInfo').textContent = user.name + ' • ' + user.email;
+  } else {
+    ua.innerHTML = `<button class="btn" id="openLogin">Kirish / Login</button>`;
+    qs('#openLogin').onclick = ()=> openAuth('login');
+    qs('#welcomeText').textContent = state.lang==='uz'?'Xush kelibsiz!' : 'Welcome!';
+    qs('#userInfo').textContent = state.lang==='uz'?'Guest' : 'Guest';
+    qs('#userInfo').style.color = 'var(--muted)';
+  }
+}
+
+/* ===========================
+   Add resource (protected)
+   =========================== */
+qs('#openAdd').onclick = ()=>{
+  if(!state.currentUser){ alert(state.lang==='uz'?'Iltimos avval tizimga kirishingiz kerak':'Please login first'); openAuth('login'); return; }
+  qs('#addModal').style.display = 'flex';
+};
+qs('#closeAdd').onclick = ()=> qs('#addModal').style.display = 'none';
+
+qs('#addForm').onsubmit = (e)=>{
+  e.preventDefault();
+  if(!state.currentUser){ alert(state.lang==='uz'?'Iltimos tizimga kiring':'Please login'); return; }
+  const type = qs('#addType').value;
+  const rawTitle = qs('#addTitleInput').value.trim();
+  const rawDesc = qs('#addDesc').value.trim();
+  const author = qs('#addAuthor').value.trim();
+  const link = qs('#addLink').value.trim();
+  if(!rawTitle){ alert(state.lang==='uz'?'Sarlavha kerak':'Title required'); return; }
+  const title = parseBilingual(rawTitle);
+  const desc = parseBilingual(rawDesc);
+  const item = { id: genId(), type, title, desc, author, link, created: Date.now() };
+  state.data.unshift(item);
+  saveData(state.data);
+  qs('#addModal').style.display = 'none';
+  qs('#addForm').reset();
+  renderAll();
+  alert(state.lang==='uz'?'Resurs qo\'shildi':'Resource added');
+};
+
+/* ===========================
+   Language & Theme
+   =========================== */
+qs('#langToggle').onclick = ()=>{
+  state.lang = state.lang === 'uz' ? 'en' : 'uz';
+  localStorage.setItem('cyberuz_lang', state.lang);
+  applyLang(state.lang);
+  renderAll();
+};
+function applyLang(l){
+  qs('#langToggle').textContent = l === 'uz' ? 'UZ' : 'EN';
+  qsa('[data-uz]').forEach(el=>{
+    const uz = el.getAttribute('data-uz');
+    const en = el.getAttribute('data-en');
+    if(l==='uz' && uz) el.textContent = uz;
+    if(l==='en' && en) el.textContent = en;
+  });
+  // update placeholders/titles that are not data-attrs
+  qs('#slogan').textContent = l==='uz'?'Kiberxavfsizlik portali • UZ / EN':'Cybersecurity portal • UZ / EN';
+  qs('#aboutText').textContent = l==='uz' ? qs('#aboutText').getAttribute('data-uz') : qs('#aboutText').getAttribute('data-en');
+  qs('#addTitle').textContent = l==='uz'?'Yangi resurs qoʻshish / Add resource':'Add resource';
+  renderUserArea();
+}
+
+qs('#themeToggle').onclick = ()=>{
+  const isLight = document.body.classList.toggle('light');
+  state.theme = isLight ? 'light' : 'dark';
+  localStorage.setItem('cyberuz_theme', state.theme);
+};
+function applyTheme(mode){
+  if(mode === 'light') document.body.classList.add('light'); else document.body.classList.remove('light');
+}
+
+/* ===========================
+   Helpers: parse bilingual title like "uz||en"
+   =========================== */
+function parseBilingual(raw){
+  if(!raw) return {uz:'', en:''};
+  if(raw.includes('||')){
+    const [uz,en] = raw.split('||').map(s=>s.trim());
+    return {uz:uz||en, en:en||uz};
+  } else {
+    return {uz:raw, en:raw};
+  }
+}
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+
+/* ===========================
+   Wire up initial UI triggers & close modals on backdrop click
+   =========================== */
+function wireUI(){
+  // auth modal backdrop close
+  qs('#authModal').onclick = (e)=> { if(e.target === qs('#authModal')) closeAuth(); };
+  qs('#addModal').onclick = (e)=> { if(e.target === qs('#addModal')) qs('#addModal').style.display='none'; };
+
+  // logout is inside renderUserArea (button created dynamically)
+}
+
+// expose wireUI
+function wireUI(){ // already declared above, keep for clarity
+  qs('#authModal').onclick = (e)=> { if(e.target === qs('#authModal')) closeAuth(); };
+  qs('#addModal').onclick = (e)=> { if(e.target === qs('#addModal')) qs('#addModal').style.display='none'; };
+  // attach openLogin (may re-add after re-render)
+  document.addEventListener('click', (ev)=>{
+    if(ev.target && ev.target.id==='openLogin'){ openAuth('login'); }
+  });
+}
+
+/* Initialize wiring */
+wireUI();
+
+/* ===========================
+   Small utilities
+   =========================== */
+// keep a safe renderAll alias
+function renderAllSafe(){ try{ renderAll() }catch(e){ console.error(e) } }
+
+/* ===========================
+   Escape hatch for dev
+   =========================== */
+window.CyberUz = { state, renderAll, saveData, saveUsers };
+
+</script>
+</body>
+</html>
